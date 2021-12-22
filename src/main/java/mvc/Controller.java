@@ -24,6 +24,7 @@ import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
 
 import org.apache.commons.mail.SimpleEmail;
+import javafx.concurrent.*;
 
 public class Controller implements Initializable{
 
@@ -91,7 +92,7 @@ public class Controller implements Initializable{
 
 	    
 	   private void onEnviarButtonAction() {
-		   try {
+		   
 			   Email email = new SimpleEmail();
 			   email.setHostName(smtp.getText());
 			   email.setSmtpPort(Integer.parseInt(Puerto.getText()));
@@ -101,25 +102,38 @@ public class Controller implements Initializable{
 			   } else {
 				   email.setSSLOnConnect(false);
 			   }
-			   email.setFrom(remitente.getText());
-			   email.setSubject(asunto.getText());
-			   email.setMsg(mensaje.getText());
-			   email.addTo(destinatario.getText());
-			   email.send();
 			   
-			   Alert alert = new Alert(AlertType.INFORMATION);
-			   alert.setTitle("Mensaje enviado");
-			   alert.setContentText("Mensaje enviado con éxito a 'fran.profe.icm@gmail.com'");
-			   alert.showAndWait();
 			   
-		   } catch (Exception e) {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Error");
-			alert.setContentText("No se pudo enviar el email.");
-			alert.showAndWait();
-		   }
-		  
-		   
+			   Task<String> enviarEmailTask = new Task<String>() {
+
+				@Override
+				protected String call() throws Exception {
+					 email.setFrom(remitente.getText());
+					   email.setSubject(asunto.getText());
+					   email.setMsg(mensaje.getText());
+					   email.addTo(destinatario.getText());
+					   return email.send();
+				}
+				   
+				   
+				   
+			   };
+			  
+			   enviarEmailTask.setOnSucceeded(event -> {
+				   Alert alert = new Alert(AlertType.INFORMATION);
+				   alert.setTitle("Mensaje enviado");
+				   alert.setContentText("Mensaje enviado con éxito a 'fran.profe.icm@gmail.com'");
+				   alert.showAndWait();
+			   });
+			  
+			   
+
+			   enviarEmailTask.setOnFailed(event -> {
+			   Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Error");
+				alert.setContentText("No se pudo enviar el email.");
+				alert.showAndWait();
+			   });
 	   
 	   }
 
